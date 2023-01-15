@@ -3,6 +3,8 @@ import os
 import sys
 import random
 import sqlite3
+from first_window import Scene1
+from second_window import Scene2
 SIZE = WIDTH, HEIGHT = 832, 384
 
 run = True
@@ -185,92 +187,33 @@ new_player, x, y = generate_level(level)
 
 
 if __name__ == '__main__':
-    font = pygame.font.Font(None, 32)
-    input_box = pygame.Rect((WIDTH - 160) // 2 - 20, (HEIGHT - 32) // 2 - 35, 160, 32)
-    color_inactive = pygame.Color('lightslategrey')
-    color_active = pygame.Color('lightskyblue')
-    color = color_inactive
-    active = False
-    error = False
-    text = ''
-    my_font = pygame.font.SysFont('Comic Sans MS', 35)
-    my_font1 = pygame.font.SysFont('Comic Sans MS', 30)
-    my_font2 = pygame.font.SysFont('Comic Sans MS', 23)
-    text_surface = my_font.render('Platformer', False, (0, 0, 0))
-    text_surface1 = my_font1.render('START!', False, (0, 0, 0))
-    text_surface2 = my_font2.render("""A, D - вправо, влево; пробел - прыжок""", False, (0, 0, 0))
+    scenes = [Scene1, Scene2]
     screen = pygame.display.set_mode(SIZE)
     pygame.display.set_caption('Platformer')
-    # ожидание закрытия окна:
+    current_scene = Scene1(SIZE, screen)
     not_exit = True
-    img = 'background.png'
-    image = pygame.image.load(img)
-    img = pygame.transform.scale(image, (WIDTH, HEIGHT))
-    screen.blit(img, (0, 0))
 
     while not_exit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 not_exit = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if input_box.collidepoint(event.pos):
-                    active = not active
-                if X < event.pos[0] < X + width and Y + 40 < event.pos[1] < Y + height + 40:
-                    print('click')
-                    if len(text) < 8:
-                        error = True
-                    else:
-                        not_exit = False
-                color = color_active if active else color_inactive
-            if event.type == pygame.KEYDOWN:
-                if active:
-                    if event.key == pygame.K_RETURN:
-                        print(text)
-                        text = ''
-                    elif event.key == pygame.K_BACKSPACE:
-                        text = text[:-1]
-                    else:
-                        if len(text) < 8:
-                            text += event.unicode
-        screen.blit(img, (0, 0))
-        txt_surface = font.render(text, True, color)
-        width = max(200, txt_surface.get_width() + 10)
-        input_box.w = width
-        pygame.draw.rect(screen, color, input_box, 2)
-        text_surface3 = my_font.render('Введите логин', False, (0, 0, 0))
-        text_surface4 = my_font1.render('OK', False, (0, 0, 0))
-        text_surface5 = my_font2.render('Введите логин! 8 букв, латиница', False, (247, 19, 24))
-        pygame.draw.rect(screen, (54, 54, 54), [X - 5, Y + 35, width + 10, height + 10])
-        pygame.draw.rect(screen, (204, 204, 204), [X, Y + 40, width, height])
-        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
-        screen.blit(text_surface3, (text_x - 37, text_y))
-        screen.blit(text_surface4, (text_x1 + 30, text_y1 + 40))
-        if error:
-            screen.blit(text_surface5, (text_x2 + 20, text_y2 + 15))
+            else:
+                res = current_scene.render(event)
+        current_scene.update()
+        if res:
+            current_scene = scenes[res - 1](SIZE, screen)
         pygame.display.flip()
 
-    not_exit = True
-    while not_exit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 not_exit = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if X < event.pos[0] < X + width and Y < event.pos[1] < Y + height:
-                    print('game starts')
-                    not_exit = False
-        screen.blit(img, (0, 0))
-        screen.blit(text_surface, (text_x, text_y))
-        screen.blit(text_surface1, (text_x1, text_y1))
-        screen.blit(text_surface2, (text_x2, text_y2))
-        pygame.draw.rect(screen, (54, 54, 54), [X - 5, Y - 5, width + 10, height + 10])
-        pygame.draw.rect(screen, (204, 204, 204), [X, Y, width, height])
-        screen.blit(text_surface1, (text_x1, text_y1))
-        screen.blit(text_surface2, (text_x2, text_y2))
+            else:
+                res = current_scene.render(event)
+        current_scene.update()
+        if res:
+            current_scene = scenes[res - 1](SIZE, screen)
         pygame.display.flip()
 
-    not_exit = True
-    while not_exit:
-        pygame.display.set_caption('platformer')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 not_exit = False
