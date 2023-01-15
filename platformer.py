@@ -3,7 +3,7 @@ import os
 import sys
 
 width = 832
-height = 384
+height = 512
 
 tile_width = tile_height = 64
 
@@ -63,6 +63,8 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
+        surf = pygame.Surface((tile_width, 4))
+        self.mask = pygame.mask.from_surface(surf)
         self.image = player_image
 
         print(pos_x, pos_y)
@@ -70,7 +72,8 @@ class Player(pygame.sprite.Sprite):
             tile_width * pos_x, tile_height * pos_y - 2)
 
         self.run = {'right': [os.path.join('walk', 'right', file) for file in os.listdir(os.path.join('walk', 'right'))],
-                    'left': [os.path.join('walk', 'left', file) for file in os.listdir(os.path.join('walk', 'left'))]}
+                    'left': [os.path.join('walk', 'left', file) for file in os.listdir(os.path.join('walk', 'left'))],
+                    'up': [os.path.join('jump', file) for file in os.listdir(os.path.join('jump'))]}
 
         print(self.run)
 
@@ -91,39 +94,45 @@ class Player(pygame.sprite.Sprite):
 
         if self.is_move:
             self.move()
+            self.lending()
             self.cur_img = (self.cur_img + 1) % len(images)
             self.image = load_image(images[self.cur_img])
         else:
             self.image = load_image(images[0])
 
         if self.is_up:
+            self.rect = self.rect.move(0, -7)
             if pygame.time.get_ticks() - self.up_time >= 400:
                 print(pygame.time.get_ticks(), self.up_time)
                 self.is_up = False
+                self.is_falling = True
 
     def move(self):
         if self.direction == 'right':
             self.rect = self.rect.move(self.STEP, 0)
 
+            # if not pygame.sprite.spritecollide.collide_mask(self, tiles_group):
+            #    self.rect = self.rect.move(-self.STEP, 0)
+
             if pygame.sprite.spritecollideany(self, tiles_group):
                 self.rect = self.rect.move(-self.STEP, 0)
-        elif self.direction == 'left':
+
+        if self.direction == 'left':
             self.rect = self.rect.move(-self.STEP, 0)
 
             if pygame.sprite.spritecollideany(self, tiles_group):
                 self.rect = self.rect.move(self.STEP, 0)
 
-        if self.is_up:
-            self.rect = self.rect.move(
-                self.rect.x, self.rect.y - self.STEP)
+        # elif self.direction == 'up':
+        #    if self.is_up:
+        #        self.rect = self.rect.move(0, -10)
 
     def lending(self):
-        self.rect = self.rect.move(
-            self.rect.x, self.rect.y + self.STEP)
+        self.is_falling = True
+        self.rect = self.rect.move(0, self.STEP)
 
         if pygame.sprite.spritecollideany(self, tiles_group):
-            self.rect = self.rect.move(
-                self.rect.x, self.rect.y - self.STEP)
+            self.rect = self.rect.move(0, - self.STEP)
             self.is_falling = False
 
 
@@ -163,18 +172,43 @@ def generate_level(level):
 
 background = Background()
 
-level = ['      ',
-         '     /?',
-         '     ',
-         '@ ##  ##  #',
-         '##..##..##.###',
+level = ['        ',
+         '        ',
+         '        ',
+         '        ',
+         '        ',
+         '  ##  @#  #',
+         '##..###.##.###',
          '...............',]
 
 new_player, x, y = generate_level(level)
 
+
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, tiles_group):
+        tiles_group.rect.x += self.dx
+
+    # позиционировать камеру на объекте target
+    def update(self, new_player):
+        self.dx = -(new_player.rect.x + new_player.rect.w // 2 - width // 2)
+        self.dy = -(new_player.rect.y + new_player.rect.h // 2 - height // 2)
+
+
+camera = Camera()
+
 while not_exit:
     pygame.display.set_caption('platformer')
     for event in pygame.event.get():
+        camera.update(new_player)
+        for sprite in all_sprites:
+            camera.apply(sprite)
+
         if event.type == pygame.QUIT:
             not_exit = False
 
@@ -191,7 +225,7 @@ while not_exit:
                 print('драсте забор покрасьте')
                 new_player.up_time = pygame.time.get_ticks()
                 new_player.is_up = True
-                new_player.direction = 'right'
+                new_player.direction = 'up'
 
         elif event.type == pygame.KEYUP:
             new_player.is_move = False
