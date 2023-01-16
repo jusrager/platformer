@@ -42,7 +42,10 @@ tile_images = {
     'wall': load_image('ground_rock.png'),
     'empty': load_image('rock.png'),
     'hanging_platform1': load_image('hanging_platform1.png'),
-    'hanging_platform2': load_image('hanging_platform2.png')
+    'hanging_platform2': load_image('hanging_platform2.png'),
+    'lava': load_image('lava.png'),
+    'coin': load_image('coin.png'),
+    'stop': load_image('stop.png')
 }
 player_image = load_image('player.png')
 background_image = load_image('background.png')
@@ -77,6 +80,8 @@ class Player(pygame.sprite.Sprite):
 
         print(self.run)
 
+        self.count = 0
+
         self.cur_img = 0
         self.is_move = False
         self.direction = 'right'
@@ -92,6 +97,13 @@ class Player(pygame.sprite.Sprite):
 
         images = self.run[self.direction]
 
+        if self.is_up:
+            self.rect = self.rect.move(0, -7)
+            if pygame.time.get_ticks() - self.up_time >= 400:
+                print(pygame.time.get_ticks(), self.up_time)
+                self.is_up = False
+                self.is_falling = True
+
         if self.is_move:
             self.move()
             self.lending()
@@ -99,13 +111,6 @@ class Player(pygame.sprite.Sprite):
             self.image = load_image(images[self.cur_img])
         else:
             self.image = load_image(images[0])
-
-        if self.is_up:
-            self.rect = self.rect.move(0, -7)
-            if pygame.time.get_ticks() - self.up_time >= 400:
-                print(pygame.time.get_ticks(), self.up_time)
-                self.is_up = False
-                self.is_falling = True
 
     def move(self):
         if self.direction == 'right':
@@ -128,12 +133,61 @@ class Player(pygame.sprite.Sprite):
         #        self.rect = self.rect.move(0, -10)
 
     def lending(self):
-        self.is_falling = True
         self.rect = self.rect.move(0, self.STEP)
 
         if pygame.sprite.spritecollideany(self, tiles_group):
             self.rect = self.rect.move(0, - self.STEP)
-            self.is_falling = False
+            if self.is_up:
+                self.is_falling = False
+
+
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(coin_group, all_sprites)
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+        self.image = pygame.transform.scale(
+            self.image, (tile_width, tile_height))
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, player_group):
+            self.image = pygame.transform.scale(self.image, (0, 0))
+            new_player.count += 1
+            print('Ы')
+            self.rect = self.rect.move(-100, -100)
+
+
+class Border(pygame.sprite.Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(border_group, all_sprites)
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+        self.image = pygame.transform.scale(
+            self.image, (tile_width, tile_height))
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, player_group):
+            self.rect = new_player.rect.move(-2, 0)
+            print('SSSSSSSSSSS')
+            # финиш экран
+
+
+class Lava(pygame.sprite.Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(lava_group, all_sprites)
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+        self.image = pygame.transform.scale(
+            self.image, (tile_width, tile_height))
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, player_group):
+            # self.rect = new_player.move(-2, 0)
+            print('SSSSSSSSSSS')
+            # проигрыш экран
 
 
 class Background(pygame.sprite.Sprite):
@@ -148,6 +202,9 @@ player = None
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+coin_group = pygame.sprite.Group()
+border_group = pygame.sprite.Group()
+lava_group = pygame.sprite.Group()
 
 
 def generate_level(level):
@@ -163,6 +220,12 @@ def generate_level(level):
                 Tile('hanging_platform1', x, y)
             elif level[y][x] == '?':
                 Tile('hanging_platform2', x, y)
+            elif level[y][x] == '-':
+                Lava('lava', x, y)
+            elif level[y][x] == '=':
+                Coin('coin', x, y)
+            elif level[y][x] == '+':
+                Border('stop', x, y)
 
             elif level[y][x] == '@':
                 new_player = Player(x, y)
@@ -172,14 +235,14 @@ def generate_level(level):
 
 background = Background()
 
-level = ['        ',
-         '        ',
-         '        ',
-         '        ',
-         '        ',
-         '  ##  @#  #',
-         '##..###.##.###',
-         '...............',]
+level = ['++++++                       ++++++',
+         '++++++=            =   =     ++++++',
+         '++++++##=         /?  /?   = ++++++',
+         '++++++..#                    ++++++',
+         '++++++...#     /?     =      ++++++',
+         '++++++....# @        ##     =++++++',
+         '++++++.....##########..## # #++++++',
+         '++++++...................-.-.++++++',]  # 25
 
 new_player, x, y = generate_level(level)
 
@@ -191,13 +254,21 @@ class Camera:
         self.dy = 0
 
     # сдвинуть объект obj на смещение камеры
+
     def apply(self, tiles_group):
+
         tiles_group.rect.x += self.dx
 
     # позиционировать камеру на объекте target
+
     def update(self, new_player):
+        # print(self.dx, self.dy)
         self.dx = -(new_player.rect.x + new_player.rect.w // 2 - width // 2)
         self.dy = -(new_player.rect.y + new_player.rect.h // 2 - height // 2)
+
+        # self.dx = -(new_player.image.get_rect().x +
+        #            new_player.image.get_rect().w // 2 - width // 2)
+        # self.dy = 0
 
 
 camera = Camera()
@@ -232,5 +303,8 @@ while not_exit:
 
     new_player.update()
     all_sprites.draw(screen)
+    coin_group.update()
+    border_group.update()
+    lava_group.update()
     pygame.display.flip()
     clock.tick(FPS)
