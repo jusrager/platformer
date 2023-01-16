@@ -13,7 +13,7 @@ class Scene1:
         my_font = pygame.font.SysFont('Comic Sans MS', 35)
         my_font1 = pygame.font.SysFont('Comic Sans MS', 30)
         my_font2 = pygame.font.SysFont('Comic Sans MS', 23)
-        font = pygame.font.Font(None, 32)
+        self.font = pygame.font.Font(None, 32)
         self.input_box = pygame.Rect((WIDTH - 160) // 2 - 20, (HEIGHT - 32) // 2 - 35, 160, 32)
         self.color_inactive = pygame.Color('lightslategrey')
         self.color_active = pygame.Color('lightskyblue')
@@ -24,7 +24,7 @@ class Scene1:
         path = 'background.png'
         image = pygame.image.load(path)
         self.img = pygame.transform.scale(image, (WIDTH, HEIGHT))
-        self.txt_surface = font.render(self.text, True, self.color)
+        self.txt_surface = self.font.render(self.text, True, self.color)
         width = max(200, self.txt_surface.get_width() + 10)
         self.input_box.w = width
         self.text_surface3 = my_font.render('Введите логин', False, (0, 0, 0))
@@ -48,10 +48,10 @@ class Scene1:
                 self.active = not self.active
             if self.X < event.pos[0] < self.X + self.width and self.Y + 40 < event.pos[1] < self.Y + self.height + 40:
                 print('click')
-                """if len(self.text) < 8:
+                if len(self.text) < 8:
                     self.error = True
-                else:"""
-                return 2
+                else:
+                    return (2, self.text)
             self.color = self.color_active if self.active else self.color_inactive
         if event.type == pygame.KEYDOWN:
             if self.active:
@@ -63,4 +63,5 @@ class Scene1:
                 else:
                     if len(self.text) < 8:
                         self.text += event.unicode
+        self.txt_surface = self.font.render(self.text, True, self.color)
         return False

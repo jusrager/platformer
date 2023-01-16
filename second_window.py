@@ -32,4 +32,4 @@ class Scene2:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.X < event.pos[0] < self.X + self.width and self.Y < event.pos[1] < self.Y + self.height:
                 print('game starts')
-                return 3
+                return (3,)
