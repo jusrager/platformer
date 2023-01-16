@@ -104,25 +104,25 @@ class Player(pygame.sprite.Sprite):
                 self.is_falling = False
 
 class Coin(pygame.sprite.Sprite):
-    def __init__(self, screen, tile_type, pos_x, pos_y):
+    def __init__(self, screen, new_player, tile_type, pos_x, pos_y):
         super().__init__(coin_group, all_sprites)
         self.screen = screen
+        self.player = new_player
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
         self.image = pygame.transform.scale(
             self.image, (tile_width, tile_height))
-        print(new_player)
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
-        self.text_surface3 = self.font.render(str(new_player.count), False, (0, 0, 0))
+        self.text_surface3 = self.font.render(str(self.player.count), False, (0, 0, 0))
 
     def update(self):
         if pygame.sprite.spritecollideany(self, player_group):
             self.image = pygame.transform.scale(self.image, (0, 0))
-            new_player.count += 1
-            self.text_surface3 = self.font.render(str(new_player.count), False, (0, 0, 0))
+            self.player.count += 1
+            self.text_surface3 = self.font.render(str(self.player.count), False, (0, 0, 0))
             self.screen.blit(self.text_surface3, (width, 0))
-            print(new_player.count)
+            print(self.player.count)
             self.rect = self.rect.move(-100, -100)
 
 class Border(pygame.sprite.Sprite):
@@ -173,7 +173,7 @@ border_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 
 def generate_level(level):
-    new_player, x, y = None, None, None
+    new_player, x, y = Player(), None, None
 
     for y in range(len(level)):
         for x in range(len(level[y])):
@@ -188,7 +188,7 @@ def generate_level(level):
             elif level[y][x] == '-':
                 Lava('lava', x, y)
             elif level[y][x] == '=':
-                Coin(screen, 'coin', x, y)
+                Coin(screen, new_player, 'coin', x, y)
             elif level[y][x] == '+':
                 Border('stop', x, y)
 
