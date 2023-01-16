@@ -7,6 +7,10 @@ height = 512
 
 tile_width = tile_height = 64
 
+pygame.init()
+pygame.mixer.music.load('mus.mp3')
+pygame.mixer.music.play()
+
 
 def load_image(fullname, colorkey=None):
     if not os.path.isfile(fullname):
