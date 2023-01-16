@@ -3,16 +3,17 @@ from functions import *
 
 
 tile_images = {
-        'wall': load_image('ground_rock.png'),
-        'empty': load_image('rock.png'),
-        'hanging_platform1': load_image('hanging_platform1.png'),
-        'hanging_platform2': load_image('hanging_platform2.png'),
-        'lava': load_image('lava.png'),
-        'coin': load_image('coin.png'),
-        'stop': load_image('stop.png')
-    }
+    'wall': load_image('ground_rock.png'),
+    'empty': load_image('rock.png'),
+    'hanging_platform1': load_image('hanging_platform1.png'),
+    'hanging_platform2': load_image('hanging_platform2.png'),
+    'lava': load_image('lava.png'),
+    'coin': load_image('coin.png'),
+    'stop': load_image('stop.png')
+}
 player_image = load_image('player.png')
 background_image = load_image('background.png')
+
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
@@ -22,6 +23,7 @@ class Tile(pygame.sprite.Sprite):
             tile_width * pos_x, tile_height * pos_y)
         self.image = pygame.transform.scale(
             self.image, (tile_width, tile_height))
+
 
 class Player(pygame.sprite.Sprite):
     STEP = 2
@@ -103,6 +105,7 @@ class Player(pygame.sprite.Sprite):
             if self.is_up:
                 self.is_falling = False
 
+
 class Coin(pygame.sprite.Sprite):
     def __init__(self, screen, new_player, tile_type, pos_x, pos_y):
         super().__init__(coin_group, all_sprites)
@@ -114,16 +117,19 @@ class Coin(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(
             self.image, (tile_width, tile_height))
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
-        self.text_surface3 = self.font.render(str(self.player.count), False, (0, 0, 0))
+        self.text_surface3 = self.font.render(
+            str(self.player.count), False, (0, 0, 0))
 
     def update(self):
         if pygame.sprite.spritecollideany(self, player_group):
             self.image = pygame.transform.scale(self.image, (0, 0))
             self.player.count += 1
-            self.text_surface3 = self.font.render(str(self.player.count), False, (0, 0, 0))
+            self.text_surface3 = self.font.render(
+                str(self.player.count), False, (0, 0, 0))
             self.screen.blit(self.text_surface3, (width, 0))
             print(self.player.count)
             self.rect = self.rect.move(-100, -100)
+
 
 class Border(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
@@ -137,9 +143,10 @@ class Border(pygame.sprite.Sprite):
     def update(self):
         if pygame.sprite.spritecollideany(self, player_group):
             self.rect = new_player.rect.move(-2, 0)
-            print('SSSSSSSSSSS')
+            #print('SSSSSSSSSSS')
             return (5,)
             # финиш экран
+
 
 class Lava(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
@@ -157,11 +164,13 @@ class Lava(pygame.sprite.Sprite):
             return 4
             # проигрыш экран
 
+
 class Background(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.image = background_image
         self.rect = self.image.get_rect().move(0, 0)
+
 
 player = None
 
@@ -172,8 +181,9 @@ coin_group = pygame.sprite.Group()
 border_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 
+
 def generate_level(level):
-    new_player, x, y = Player(), None, None
+    new_player, x, y = Player(0, 0), None, None
 
     for y in range(len(level)):
         for x in range(len(level[y])):
@@ -189,26 +199,29 @@ def generate_level(level):
                 Lava('lava', x, y)
             elif level[y][x] == '=':
                 Coin(screen, new_player, 'coin', x, y)
+            elif level[y][x] == '@':
+                new_player = Player(x, y)
             elif level[y][x] == '+':
                 Border('stop', x, y)
 
-            elif level[y][x] == '@':
-                new_player = Player(x, y)
+            
 
     return new_player, x, y
+
 
 background = Background()
 
 level = ['++++++                       ++++++',
-         '++++++=            =   =     ++++++',
-         '++++++##=         /?  /?   = ++++++',
-         '++++++..#                    ++++++',
+         '++++++ @          =   =      ++++++',
+         '++++++##          /?  /?   = ++++++',
+         '++++++..#       =            ++++++',
          '++++++...#     /?     =      ++++++',
-         '++++++....# @        ##     =++++++',
+         '++++++....# =        ##     =++++++',
          '++++++.....##########..## # #++++++',
          '++++++...................-.-.++++++', ]  # 25
 
 new_player, x, y = generate_level(level)
+
 
 class Camera:
     # зададим начальный сдвиг камеры
@@ -232,7 +245,9 @@ class Camera:
         #            new_player.image.get_rect().w // 2 - width // 2)
         # self.dy = 0
 
+
 camera = Camera()
+
 
 class Scene3:
     def __init__(self, SIZE, screen):
@@ -240,6 +255,7 @@ class Scene3:
 
     def update(self):
         pass
+
     def render(self, event):
         camera.update(new_player)
         for sprite in all_sprites:
