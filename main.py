@@ -1,5 +1,4 @@
 import pygame
-import sqlite3
 
 from scene import Scene
 from scene_login import Scene_Login
@@ -10,21 +9,18 @@ from scene_win import Scene_Win
 import consts
 
 
-scores = sqlite3.connect("db/scores.sqlite")
-cur = scores.cursor()
-cur.execute(
-    """CREATE TABLE IF NOT EXISTS scores(login TEXT, currentscore INT, bestscore INT)"""
-)
-
-
 def main() -> None:
+    pygame.mixer.pre_init(frequency=48000, size=-16, channels=2, buffer=512)
     pygame.init()
     pygame.font.init()
+
     pygame.display.set_mode(consts.SCREEN_SIZE)
     pygame.display.set_caption("Platformer")
     clock = pygame.time.Clock()
 
-    user_name = ""
+    user_name: str = ""
+    user_score: int = 0
+
     scenes = {
         consts.SCENE_ID_LOGIN: Scene_Login,
         consts.SCENE_ID_START: Scene_Start,
@@ -33,6 +29,7 @@ def main() -> None:
         consts.SCENE_ID_WIN: Scene_Win,
     }
     current_scene: Scene = Scene_Login()
+    current_scene.show()
 
     run: bool = True
     while run:
@@ -56,11 +53,21 @@ def main() -> None:
             if type(current_scene) == Scene_Login:
                 user_name = current_scene.user_name
 
+            if type(current_scene) == Scene_Level_01:
+                user_score = current_scene.get_score()
+
+            current_scene.hide()
+
             if next_scene_id in scenes:
                 current_scene = scenes[next_scene_id]()
 
-            if type(current_scene) in (Scene_Login, Scene_Win, Scene_Lose):
-                current_scene.set_user_name(user_name)
+                if type(current_scene) in (Scene_Login, Scene_Win, Scene_Lose):
+                    current_scene.set_user_name(user_name)
+
+                if type(current_scene) in (Scene_Win, Scene_Lose):
+                    current_scene.set_score(user_score)
+
+            current_scene.show()
 
         clock.tick(consts.FPS)
 

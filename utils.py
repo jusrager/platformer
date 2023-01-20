@@ -1,11 +1,13 @@
+from typing import Union
 import os
 import sys
-from typing import Union
 import pygame
 
 
-def load_image(image_name: str, colorkey: Union[pygame.Color, None] = None) -> pygame.Surface:
-    image_path: str = f"assets/{image_name}.png"
+def load_image(
+    image_name: str, colorkey: Union[pygame.Color, None] = None
+) -> pygame.Surface:
+    image_path: str = f"assets/gfx/{image_name}.png"
     if not os.path.isfile(image_path):
         print(f"Файл с изображением '{image_path}' не найден")
         sys.exit()

@@ -2,6 +2,8 @@ import pygame
 import consts
 from scene import Scene
 from utils import load_image
+from music_manager import music_play
+from db_manager import dbscores_get_best, dbscores_put_current
 
 
 COLOR_TEXT = pygame.Color("black")
@@ -9,8 +11,14 @@ COLOR_TEXT = pygame.Color("black")
 
 class Scene_Win(Scene):
     def __init__(self):
+        super().__init__()
+
         self.background = pygame.transform.scale(
             load_image("background"), consts.SCREEN_SIZE
+        )
+
+        self.sound_button = pygame.mixer.Sound(
+            "assets/sound/fxs/mixkit-arcade-mechanical-bling-210.ogg"
         )
 
         self.width, self.height = (200, 80)
@@ -34,26 +42,37 @@ class Scene_Win(Scene):
             (consts.SCREEN_HEIGHT - self.height) // 2 + 115,
         )
 
-        font35 = pygame.font.SysFont("Comic Sans MS", 35)
-        font30 = pygame.font.SysFont("Comic Sans MS", 30)
-        self.text_surface1 = font35.render("Уровень пройден!", False, COLOR_TEXT)
-        self.text_surface2 = font30.render("Ваш результат:", False, COLOR_TEXT)
-        self.text_surface3 = font30.render("Ваш рекорд:", False, COLOR_TEXT)
-        self.text_surface4 = font30.render("Заново", False, COLOR_TEXT)
+        self.font35 = pygame.font.SysFont("Comic Sans MS", 35)
+        self.font30 = pygame.font.SysFont("Comic Sans MS", 30)
+        self.text_button = self.font30.render("Заново", False, COLOR_TEXT)
 
         self.user_name = ""
+        self.score_current = 0
+        self.score_best = 0
+
+    def show(self) -> None:
+        music_play(
+            "assets/sound/loops/music_zapsplat_game_music_fun_tropical_caribean_steel_drums_percussion_008.mp3",
+            volume=0.7,
+        )
+
+        self.score_best = dbscores_get_best(self.user_name)
 
     def set_user_name(self, user_name):
         self.user_name = user_name
 
+    def set_score(self, score):
+        self.score_current = score
+
     def handle_event(self, event) -> str:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.button_rect.collidepoint(event.pos):
+                self.sound_button.play()
                 return consts.SCENE_ID_START
 
         return consts.SCENE_ID_CURRENT
 
-    def draw(self) -> str:
+    def draw(self) -> None:
         screen = pygame.display.get_surface()
         screen.blit(self.background, (0, 0))
 
@@ -64,9 +83,18 @@ class Scene_Win(Scene):
         )
         pygame.draw.rect(screen, (204, 204, 204), self.button_rect)
 
-        screen.blit(self.text_surface1, (self.text_x, self.text_y))
-        screen.blit(self.text_surface2, (self.text_x, self.text_y1))
-        screen.blit(self.text_surface3, (self.text_x, self.text_y1 + 45))
-        screen.blit(self.text_surface4, (self.text_x2, self.text_y2))
+        surface = self.font35.render(
+            f"{self.user_name}, уровень пройден!", False, COLOR_TEXT
+        )
+        screen.blit(surface, (self.text_x, self.text_y))
+        screen.blit(self.text_button, (self.text_x2, self.text_y2))
 
-        return consts.SCENE_ID_CURRENT
+        surface = self.font30.render(
+            f"Ваш результат: {self.score_current}", False, COLOR_TEXT
+        )
+        screen.blit(surface, (self.text_x, self.text_y1))
+
+        surface = self.font30.render(
+            f"Ваш рекорд: {self.score_best}", False, COLOR_TEXT
+        )
+        screen.blit(surface, (self.text_x, self.text_y1 + 45))

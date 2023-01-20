@@ -2,6 +2,7 @@ import pygame
 import consts
 from scene import Scene
 from utils import load_image
+from music_manager import music_play
 
 
 COLOR_INPUT_ACTIVE = pygame.Color("lightskyblue")
@@ -10,8 +11,14 @@ COLOR_INPUT_INACTIVE = pygame.Color("lightslategrey")
 
 class Scene_Login(Scene):
     def __init__(self):
+        super().__init__()
+
         self.background = pygame.transform.scale(
             load_image("background"), consts.SCREEN_SIZE
+        )
+
+        self.sound_button = pygame.mixer.Sound(
+            "assets/sound/fxs/mixkit-arcade-mechanical-bling-210.ogg"
         )
 
         self.width, self.height = (200, 80)
@@ -57,6 +64,12 @@ class Scene_Login(Scene):
         self.input_error = False
         self.user_name = ""
 
+    def show(self) -> None:
+        music_play(
+            "assets/sound/loops/music_zapsplat_game_music_fun_tropical_caribean_steel_drums_percussion_008.mp3",
+            volume=0.7,
+        )
+
     def set_user_name(self, user_name):
         self.user_name = user_name
 
@@ -65,13 +78,16 @@ class Scene_Login(Scene):
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.input_active = self.input_rect.collidepoint(event.pos)
-            check_user_name = self.button_rect.collidepoint(event.pos)
+            if self.button_rect.collidepoint(event.pos):
+                self.sound_button.play()
+                check_user_name = True
 
         if event.type == pygame.KEYDOWN:
             self.input_error = False
 
             if self.input_active:
                 if event.key == pygame.K_RETURN:
+                    self.sound_button.play()
                     check_user_name = True
                 elif event.key == pygame.K_BACKSPACE:
                     self.user_name = self.user_name[:-1]
@@ -87,7 +103,7 @@ class Scene_Login(Scene):
 
         return consts.SCENE_ID_CURRENT
 
-    def draw(self) -> str:
+    def draw(self) -> None:
         screen = pygame.display.get_surface()
         screen.blit(self.background, (0, 0))
 
@@ -116,5 +132,3 @@ class Scene_Login(Scene):
 
         if self.input_error:
             screen.blit(self.text_surface5, (self.text_x2 + 20, self.text_y2 + 15))
-
-        return consts.SCENE_ID_CURRENT
