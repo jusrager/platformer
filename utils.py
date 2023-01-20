@@ -7,7 +7,7 @@ import pygame
 def load_image(
     image_name: str, colorkey: Union[pygame.Color, None] = None
 ) -> pygame.Surface:
-    image_path: str = f"assets/gfx/{image_name}.png"
+    image_path: str = os.path.join("assets", "gfx", f"{image_name}.png")
     if not os.path.isfile(image_path):
         print(f"Файл с изображением '{image_path}' не найден")
         sys.exit()

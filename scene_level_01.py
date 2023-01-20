@@ -1,9 +1,10 @@
 from typing import Union
+from os.path import join as path_join
 import pygame
 import consts
 from scene import Scene
 from utils import load_image
-from music_manager import music_play
+from music_manager import music_play, sound_load
 
 
 LEVEL: tuple[str, ...] = (
@@ -103,9 +104,9 @@ class Camera:
 class Player(pygame.sprite.Sprite):
     STEP = 2
     RUN = {
-        "right": ["walk/right/1", "walk/right/2"],
-        "left": ["walk/left/1", "walk/left/2"],
-        "up": ["jump/1"],
+        "right": [path_join("walk", "right", "1"), path_join("walk", "right", "2")],
+        "left": [path_join("walk", "left", "1"), path_join("walk", "left", "2")],
+        "up": [path_join("jump", "1")],
     }
 
     def __init__(self, tiles: pygame.sprite.Group) -> None:
@@ -182,12 +183,8 @@ class Scene_Level_01(Scene):
             load_image("background"), consts.SCREEN_SIZE
         )
 
-        self.sound_coin = pygame.mixer.Sound(
-            "assets/sound/fxs/mixkit-bonus-earned-in-video-game-2058.ogg"
-        )
-        self.sound_lava = pygame.mixer.Sound(
-            "assets/sound/fxs/mixkit-creature-cry-of-hurt-2208.ogg"
-        )
+        self.sound_coin = sound_load("mixkit-bonus-earned-in-video-game-2058.ogg")
+        self.sound_lava = sound_load("mixkit-creature-cry-of-hurt-2208.ogg")
 
         self.tick_start: int = 0
         self.tick_stop: int = 0
@@ -208,7 +205,7 @@ class Scene_Level_01(Scene):
     def show(self) -> None:
         self.tick_start = pygame.time.get_ticks()
         music_play(
-            "assets/sound/loops/music_zapsplat_game_music_childrens_soft_warm_cuddly_calm_015.mp3",
+            "music_zapsplat_game_music_childrens_soft_warm_cuddly_calm_015.mp3",
             volume=1.2,
         )
 

@@ -1,11 +1,18 @@
 import pygame
+import os
 
 music_path: str = ""
 
 
-def music_play(path, volume: float = 1.0, restart=False) -> None:
+def sound_load(path: str) -> pygame.mixer.Sound:
+    path = os.path.join("assets", "sound", "fxs", path)
+    return pygame.mixer.Sound(path)
+
+
+def music_play(path: str, volume: float = 1.0, restart=False) -> None:
     global music_path
 
+    path = os.path.join("assets", "sound", "loops", path)
     if pygame.mixer.music.get_busy():
         if path == music_path:
             if restart:

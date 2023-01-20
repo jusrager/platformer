@@ -2,7 +2,7 @@ import pygame
 import consts
 from scene import Scene
 from utils import load_image
-from music_manager import music_play
+from music_manager import music_play, sound_load
 from db_manager import dbscores_get_best, dbscores_put_current
 
 
@@ -17,9 +17,7 @@ class Scene_Lose(Scene):
             load_image("background"), consts.SCREEN_SIZE
         )
 
-        self.sound_button = pygame.mixer.Sound(
-            "assets/sound/fxs/mixkit-arcade-mechanical-bling-210.ogg"
-        )
+        self.sound_button = sound_load("mixkit-arcade-mechanical-bling-210.ogg")
 
         self.width, self.height = (200, 80)
         self.x, self.y = (
@@ -52,7 +50,7 @@ class Scene_Lose(Scene):
 
     def show(self) -> None:
         music_play(
-            "assets/sound/loops/music_zapsplat_game_music_fun_tropical_caribean_steel_drums_percussion_008.mp3",
+            "music_zapsplat_game_music_fun_tropical_caribean_steel_drums_percussion_008.mp3",
             volume=0.7,
         )
 
