@@ -57,6 +57,9 @@ class Scene_Win(Scene):
         )
 
         self.score_best = dbscores_get_best(self.user_name)
+        if (self.score_best == -1) or (self.score_current < self.score_best):
+            self.score_best = self.score_current
+            dbscores_put_current(self.user_name, self.score_best)
 
     def set_user_name(self, user_name):
         self.user_name = user_name

@@ -120,7 +120,8 @@ class Scene_Login(Scene):
             [self.x - 5, self.y + 35, self.width + 10, self.height + 10],
         )
         pygame.draw.rect(
-            screen, (204, 204, 204), [self.x, self.y + 40, self.width, self.height]
+            screen, (204, 204, 204), [
+                self.x, self.y + 40, self.width, self.height]
         )
 
         screen.blit(
@@ -131,4 +132,5 @@ class Scene_Login(Scene):
         screen.blit(self.text_surface4, (self.text_x1 + 30, self.text_y1 + 40))
 
         if self.input_error:
-            screen.blit(self.text_surface5, (self.text_x2 + 20, self.text_y2 + 15))
+            screen.blit(self.text_surface5,
+                        (self.text_x2 + 20, self.text_y2 + 15))

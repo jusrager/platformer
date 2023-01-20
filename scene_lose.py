@@ -93,7 +93,8 @@ class Scene_Lose(Scene):
         )
         screen.blit(surface, (self.text_x, self.text_y1))
 
-        surface = self.font30.render(
-            f"Ваш рекорд: {self.score_best}", False, COLOR_TEXT
-        )
-        screen.blit(surface, (self.text_x, self.text_y1 + 45))
+        if self.score_best != -1:
+            surface = self.font30.render(
+                f"Ваш рекорд: {self.score_best}", False, COLOR_TEXT
+            )
+            screen.blit(surface, (self.text_x, self.text_y1 + 45))
